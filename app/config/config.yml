@@ -1,1 +1,2 @@
-log_path: 'log/genome_sequence.log'
+app_name: 'app'
+log_path: 'logs/app.log'
