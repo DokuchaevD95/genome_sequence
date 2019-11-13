@@ -1,6 +1,7 @@
 import os
 from Bio import SeqIO
 from typing import List
+from Bio.SeqIO import SeqRecord
 
 
 __all__ = ['GenomesReader']
@@ -18,7 +19,7 @@ class GenomesReader:
             message = f'В директории {dir_path} не найдено геномов с расширением {self._EXTENSION}'
             raise FileNotFoundError(message)
 
-    def __iter__(self):
+    def __iter__(self) -> SeqRecord:
         for filename in self._dir_content:
             relative_path = os.path.join(self._dir_path, filename)
             with open(relative_path, 'r') as file:
