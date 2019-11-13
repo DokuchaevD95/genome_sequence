@@ -29,7 +29,7 @@ class SubSeqDispatcher:
         :return:
         """
         array = self.array
-        min_len, max_len,  = 2, len(self._seq) - 1
+        min_len, max_len = 2, len(self._seq) - 1
         highest_sub_seq_info: Optional[HighestSubSeqInfo] = None
 
         for length in range(min_len, max_len):
