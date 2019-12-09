@@ -1,16 +1,18 @@
 from logger import logger
-from utils import GenomesReader
-from sub_seq_dispatcher import SubSeqDispatcher, HighestSubSeqInfo
+from utils import GenomesReader, SequenceDispatcher
+from pattern_searcher import PatterSearcher, PatternInfo
 
 
 def main():
     logger.debug('Process was started')
-
     reader = GenomesReader('genomes/')
+
     for sequence in reader:
         logger.info(f'Исследование последовательности: {sequence.name}')
-        dispatcher = SubSeqDispatcher(sequence.seq)
-        result: HighestSubSeqInfo = dispatcher.highest_sub_seq()
+        numeric_seq = SequenceDispatcher(sequence.seq).as_numeric()
+        dispatcher = PatterSearcher(numeric_seq)
+        result: PatternInfo = dispatcher.brute_force()
+
         if result:
             logger.info(f'Наибольшая подпоследовательность длиной {result.length}'
                         f'последовательность начинается с индекса №{result.start_index}'
