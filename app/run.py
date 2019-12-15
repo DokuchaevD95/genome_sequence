@@ -11,7 +11,7 @@ def main():
         logger.info(f'Исследование последовательности: {sequence.name}')
         numeric_seq = SequenceDispatcher(sequence.seq).as_numeric()
         dispatcher = PatterSearcher(numeric_seq)
-        result: PatternInfo = dispatcher.brute_force()
+        result: PatternInfo = dispatcher.parallel_brute_force()
 
         if result:
             logger.info(f'Наибольшая подпоследовательность длиной {result.length}'

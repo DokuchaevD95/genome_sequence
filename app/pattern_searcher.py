@@ -2,6 +2,7 @@ import numpy as np
 from utils import SysMetrics
 from typing import NamedTuple
 from typing import Optional, List
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 
 __all__ = ['PatternInfo', 'PatterSearcher']
@@ -14,6 +15,8 @@ class PatternInfo(NamedTuple):
 
 
 class PatterSearcher:
+    THREADS = 5
+
     def __init__(self, numeric_seq: List[int], initial_length: Optional[int] = 1000):
         self.seq = numeric_seq
         self.array = self.get_array()
@@ -78,7 +81,6 @@ class PatterSearcher:
 
         for length in range(self.initial_length, self.seq_length - 1):
             length_info = self.check_length(length)
-
             if length_info:
                 pattern_info = length_info
 
@@ -86,8 +88,39 @@ class PatterSearcher:
 
     @SysMetrics.execution_time('Поиск наидлинейшей последовательности')
     def parallel_brute_force(self) -> Optional[PatternInfo]:
-        pass
+        """
+        Поиск повторяющейся подпоследователньности с элементами параллельности
+        :return:
+        """
+
+        pattern_info: Optional[PatternInfo] = None
+
+        futures = []
+        with ThreadPoolExecutor(5) as pool:
+            for length in range(self.initial_length, self.seq_length - 1):
+                futures.append(pool.submit(self.check_length, length))
+
+            for future in as_completed(futures):
+                length_info = future.result()
+                if length_info:
+                    pattern_info = length_info
+
+        return pattern_info
 
     @SysMetrics.execution_time('Поиск наидлинейшей последовательности')
-    def tzarev(self) -> Optional[PatternInfo]:
-        pass
+    def tzarev(self, part_length: int) -> Optional[PatternInfo]:
+        """
+        Поиск повторяющейся подпоследовательности с частичной
+        проверкой начала и конца подпоследовательности
+        :param part_length:
+        :return:
+        """
+
+        pattern_info: Optional[PatternInfo] = None
+
+        for length in range(self.initial_length, self.seq_length - 1):
+            length_info = self.check_length_partially(length, part_length)
+            if length_info:
+                pattern_info = length_info
+
+        return pattern_info
