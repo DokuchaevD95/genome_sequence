@@ -2,7 +2,7 @@ import numpy as np
 from utils import SysMetrics
 from typing import NamedTuple
 from typing import Optional, List
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import ThreadPoolExecutor, as_completed, ProcessPoolExecutor
 
 
 __all__ = ['PatternInfo', 'PatterSearcher']
@@ -95,12 +95,15 @@ class PatterSearcher:
 
         pattern_info: Optional[PatternInfo] = None
 
-        futures = []
-        with ThreadPoolExecutor(5) as pool:
+        futures_dict = {}
+        with ProcessPoolExecutor(5) as pool:
             for length in range(self.initial_length, self.seq_length - 1):
-                futures.append(pool.submit(self.check_length, length))
+                future = pool.submit(self.check_length, length)
+                futures_dict[future] = future
 
-            for future in as_completed(futures):
+            for future in as_completed(futures_dict.keys()):
+                length = futures_dict[future]
+                print(f'Computation of length = {length} is finished')
                 length_info = future.result()
                 if length_info:
                     pattern_info = length_info
@@ -122,5 +125,29 @@ class PatterSearcher:
             length_info = self.check_length_partially(length, part_length)
             if length_info:
                 pattern_info = length_info
+
+        return pattern_info
+
+    @SysMetrics.execution_time('Поиск наидлинейшей последовательности')
+    def tzarev_parallel(self, part_length: int) -> Optional[PatternInfo]:
+        """
+        Поиск повторяющейся подпоследователньности с элементами параллельности
+        :return:
+        """
+
+        pattern_info: Optional[PatternInfo] = None
+
+        futures_dict = {}
+        with ProcessPoolExecutor(5) as pool:
+            for length in range(self.initial_length, self.seq_length - 1):
+                future = pool.submit(self.check_length_partially, length, part_length)
+                futures_dict[future] = future
+
+            for future in as_completed(futures_dict.keys()):
+                length = futures_dict[future]
+                print(f'Computation of length = {length} is finished')
+                length_info = future.result()
+                if length_info:
+                    pattern_info = length_info
 
         return pattern_info
