@@ -11,12 +11,12 @@ def main():
         logger.info(f'Исследование последовательности: {sequence.name}')
         numeric_seq = SequenceDispatcher(sequence.seq).as_numeric()
         dispatcher = PatterSearcher(numeric_seq)
-        result: PatternInfo = dispatcher.tzarev_parallel(20)
+        result: PatternInfo = dispatcher.tzarev(30)
 
         if result:
             logger.info(f'Наибольшая подпоследовательность длиной {result.length}'
-                        f'последовательность начинается с индекса №{result.start_index}'
-                        f'первый повтор начинается с индекса №{result.repeat_start_index}')
+                        f'последовательность начинается с индекса №{result.first_subseq_beg_index}'
+                        f'повтор начинается с индекса №{result.second_subseq_beg_index}')
 
     logger.debug('Process was done')
 
