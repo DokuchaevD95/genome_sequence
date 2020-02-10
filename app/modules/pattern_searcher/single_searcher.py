@@ -4,7 +4,7 @@ import numpy as np
 from logger import logger
 from typing import Optional, List, Tuple
 from utils.sys_metrics import SysMetrics
-from .base import BaseSubSeqSearcher, SubSeqInfo
+from .base import BaseSubSeqSearcher, SubSeqInfo, FreqItem
 from concurrent.futures import ProcessPoolExecutor, as_completed
 
 
@@ -13,6 +13,7 @@ class SingleSubSeqSearcher(BaseSubSeqSearcher):
     Класс для поиска повторяющейся
     подпоследовательности в ОДНОЙ последовательности
      """
+
     def __init__(self, first: List[int], second: List[int]):
         super().__init__(first, second)
         self.seq = first
@@ -115,31 +116,34 @@ class SingleSubSeqSearcher(BaseSubSeqSearcher):
         )
 
     @staticmethod
-    def compare_freq_lists(freq_list: list, dec_freq_list: list) -> Tuple[Optional[int], Optional[int]]:
+    def compare_freq_lists(first_list: List[FreqItem],
+                           second_list: List[FreqItem],
+                           compare_count: int = None) -> Tuple[Optional[FreqItem], Optional[FreqItem]]:
         """
         Ищет в первом массиве такую подпоследовательность, которая
         входит во второй массив с подпоследовательностями
-        :param freq_list:
-        :param dec_freq_list:
+        :param first_list:
+        :param second_list:
+        :param compare_count:
         :return:
         """
-        freq_list_index, dec_freq_list_index = None, None
-        for index, value in enumerate(freq_list):
-            try:
-                dec_freq_list_index = dec_freq_list.index(value)
-                freq_list_index = index
-                break
-            except ValueError:
-                pass
 
-        return freq_list_index, dec_freq_list_index
+        first_freq_item, second_freq_item = None, None
+        for first_item in first_list:
+            for second_item in second_list:
+                if first_item.slice_[0: compare_count] == second_item.slice_[0: compare_count]:
+                    first_freq_item = first_item
+                    second_freq_item = second_item
+                    break
+
+        return first_freq_item, second_freq_item
 
     @SysMetrics.execution_time('Поиск наидлинейшей последовательности методом Царева')
-    def tzarev(self, part_length: int, expected_pattern_size=10**5) -> Optional[SubSeqInfo]:
+    def tzarev(self, compare_count: int, expected_pattern_size=10 ** 5) -> Optional[SubSeqInfo]:
         """
         Поиск повторяющейся подпоследовательности с частичной
         проверкой начала и конца подпоследовательности
-        :param part_length:
+        :param compare_count:
         :param expected_pattern_size:
         :return:
         """
@@ -147,20 +151,21 @@ class SingleSubSeqSearcher(BaseSubSeqSearcher):
         subseq_info: Optional[SubSeqInfo] = None
 
         window_size = shift = int(math.sqrt(expected_pattern_size))
-        while window_size > 1:
+        while window_size >= compare_count:
             initial_shift = random.randint(1, window_size / 2)
             logger.info(f'Current window_size = {window_size}')
             logger.info(f'Current initial_shift = {initial_shift}')
             freq_list = self.get_freq_list(self.seq, window_size, shift)
-            dec_freq_list = self.get_freq_list(self.seq, window_size, shift-1, initial_shift)
+            dec_freq_list = self.get_freq_list(self.seq, window_size, shift - 1, initial_shift)
 
-            first_subseq_index, second_subseq_index = self.compare_freq_lists(freq_list, dec_freq_list)
+            first_freq_item, second_freq_item = self.compare_freq_lists(freq_list, dec_freq_list, compare_count)
 
-            if any((first_subseq_index, second_subseq_index)):
-                first_subseq_index *= shift
-                second_subseq_index *= (shift - 1)
-                second_subseq_index += initial_shift
-                subseq_info = self.allocate_sequences(first_subseq_index, second_subseq_index, window_size)
+            if any((first_freq_item, second_freq_item)):
+                subseq_info = self.allocate_sequences(
+                    first_freq_item.beg,
+                    second_freq_item.beg,
+                    window_size
+                )
                 break
             else:
                 window_size = int(window_size / math.sqrt(2))

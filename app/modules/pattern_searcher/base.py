@@ -8,6 +8,11 @@ class SubSeqInfo(NamedTuple):
     second_beg: int
 
 
+class FreqItem(NamedTuple):
+    beg: int
+    slice_: List[int]
+
+
 class BaseSubSeqSearcher:
     def __init__(self, first: List[int], second: List[int]):
         self.first = first
@@ -19,7 +24,7 @@ class BaseSubSeqSearcher:
         return np.array(seq, dtype=np.int8)
 
     @classmethod
-    def get_freq_list(cls, seq: List[int], size: int, shift: int, initial_shift: int = 0):
+    def get_freq_list(cls, seq: List[int], size: int, shift: int, initial_shift: int = 0) -> List[FreqItem]:
         """
         Нарезает последжовательность на подпоследователдьности
         длины size со смещением shift
@@ -32,5 +37,6 @@ class BaseSubSeqSearcher:
         result = []
         for beg in range(0 + initial_shift, len(seq), shift):
             end = beg + size
-            result.append(seq[beg: end])
+            item = FreqItem(beg, seq[beg: end])
+            result.append(item)
         return result
