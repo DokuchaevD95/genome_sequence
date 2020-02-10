@@ -14,9 +14,9 @@ def main():
         result = searcher.tzarev(30)
 
         if result:
-            logger.info(f'Наибольшая подпоследовательность длиной {result.length}'
-                        f'последовательность начинается с индекса №{result.first_beg}'
-                        f'повтор начинается с индекса №{result.second_beg}')
+            logger.info(f'Наибольшая подпоследовательность длиной {result.length}')
+            logger.info(f'последовательность начинается с индекса {result.first_beg}')
+            logger.info(f'повтор начинается с индекса {result.second_beg}')
 
     logger.debug('Process was done')
 

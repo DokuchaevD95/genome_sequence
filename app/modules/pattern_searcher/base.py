@@ -17,3 +17,20 @@ class BaseSubSeqSearcher:
     @classmethod
     def get_array(cls, seq: List[int]) -> np.ndarray:
         return np.array(seq, dtype=np.int8)
+
+    @classmethod
+    def get_freq_list(cls, seq: List[int], size: int, shift: int, initial_shift: int = 0):
+        """
+        Нарезает последжовательность на подпоследователдьности
+        длины size со смещением shift
+        :param seq:
+        :param size:
+        :param shift:
+        :param initial_shift:
+        :return:
+        """
+        result = []
+        for beg in range(0 + initial_shift, len(seq), shift):
+            end = beg + size
+            result.append(seq[beg: end])
+        return result

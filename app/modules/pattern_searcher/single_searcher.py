@@ -1,6 +1,8 @@
 import math
+import random
 import numpy as np
-from typing import Optional, List
+from logger import logger
+from typing import Optional, List, Tuple
 from utils.sys_metrics import SysMetrics
 from .base import BaseSubSeqSearcher, SubSeqInfo
 from concurrent.futures import ProcessPoolExecutor, as_completed
@@ -74,20 +76,6 @@ class SingleSubSeqSearcher(BaseSubSeqSearcher):
 
         return subseq_info
 
-    def get_frequency_list(self, size: int, shift: int):
-        """
-        Нарезает последжовательность на подпоследователдьности
-        длины size со смещением shift
-        :param size:
-        :param shift:
-        :return:
-        """
-        result = []
-        for beg in range(0, self.max_length, shift):
-            end = beg + size
-            result.append(self.seq[beg: end])
-        return result
-
     def allocate_sequences(self, first_subseq_index: int, second_subseq_index: int, window_size: int):
         """
         Определяет локализацию совпадающих подпоследовательностей
@@ -112,7 +100,7 @@ class SingleSubSeqSearcher(BaseSubSeqSearcher):
         # Локализация правой стороны
         first_end = first_subseq_index + window_size
         second_end = second_subseq_index + window_size
-        while (first_end + 1) <= self.max_length and (second_end + 1) <= self.max_length:
+        while (first_end + 1) < self.max_length and (second_end + 1) < self.max_length:
             if self.seq[first_end + 1] == self.seq[second_end + 1]:
                 length += 1
                 first_end += 1
@@ -127,24 +115,24 @@ class SingleSubSeqSearcher(BaseSubSeqSearcher):
         )
 
     @staticmethod
-    def compare_frequencies_list(freq_list: list, decremented_freq_list: list) -> tuple:
+    def compare_freq_lists(freq_list: list, dec_freq_list: list) -> Tuple[Optional[int], Optional[int]]:
         """
         Ищет в первом массиве такую подпоследовательность, которая
         входит во второй массив с подпоследовательностями
         :param freq_list:
-        :param decremented_freq_list:
+        :param dec_freq_list:
         :return:
         """
-        freq_list_index, decremented_freq_list_index = None, None
+        freq_list_index, dec_freq_list_index = None, None
         for index, value in enumerate(freq_list):
             try:
-                decremented_freq_list_index = decremented_freq_list.index(value)
+                dec_freq_list_index = dec_freq_list.index(value)
                 freq_list_index = index
                 break
             except ValueError:
                 pass
 
-        return freq_list_index, decremented_freq_list_index
+        return freq_list_index, dec_freq_list_index
 
     @SysMetrics.execution_time('Поиск наидлинейшей последовательности методом Царева')
     def tzarev(self, part_length: int, expected_pattern_size=10**5) -> Optional[SubSeqInfo]:
@@ -158,17 +146,22 @@ class SingleSubSeqSearcher(BaseSubSeqSearcher):
 
         subseq_info: Optional[SubSeqInfo] = None
 
-        window_size = int(math.sqrt(expected_pattern_size))
+        window_size = shift = int(math.sqrt(expected_pattern_size))
         while window_size > 1:
-            freq_list = self.get_frequency_list(window_size, window_size)
-            decremented_freq_list = self.get_frequency_list(window_size, window_size-1)[1:]
+            initial_shift = random.randint(1, window_size / 2)
+            logger.info(f'Current window_size = {window_size}')
+            logger.info(f'Current initial_shift = {initial_shift}')
+            freq_list = self.get_freq_list(self.seq, window_size, shift)
+            dec_freq_list = self.get_freq_list(self.seq, window_size, shift-1, initial_shift)
 
-            first_subseq_index, second_subseq_index = self.compare_frequencies_list(freq_list, decremented_freq_list)
+            first_subseq_index, second_subseq_index = self.compare_freq_lists(freq_list, dec_freq_list)
 
             if any((first_subseq_index, second_subseq_index)):
-                first_subseq_index *= window_size
-                second_subseq_index *= (window_size - 1)
+                first_subseq_index *= shift
+                second_subseq_index *= (shift - 1)
+                second_subseq_index += initial_shift
                 subseq_info = self.allocate_sequences(first_subseq_index, second_subseq_index, window_size)
+                break
             else:
                 window_size = int(window_size / math.sqrt(2))
 
