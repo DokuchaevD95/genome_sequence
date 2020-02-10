@@ -1,6 +1,6 @@
 from logger import logger
 from utils import GenomesReader, SequenceDispatcher
-from pattern_searcher import PatterSearcher, PatternInfo
+from modules.pattern_searcher import SubSeqSearcherFabric
 
 
 def main():
@@ -10,13 +10,13 @@ def main():
     for sequence in reader:
         logger.info(f'Исследование последовательности: {sequence.name}')
         numeric_seq = SequenceDispatcher(sequence.seq).as_numeric()
-        dispatcher = PatterSearcher(numeric_seq)
-        result: PatternInfo = dispatcher.tzarev(30)
+        searcher = SubSeqSearcherFabric.get_searcher(numeric_seq, numeric_seq)
+        result = searcher.tzarev(30)
 
         if result:
             logger.info(f'Наибольшая подпоследовательность длиной {result.length}'
-                        f'последовательность начинается с индекса №{result.first_subseq_beg_index}'
-                        f'повтор начинается с индекса №{result.second_subseq_beg_index}')
+                        f'последовательность начинается с индекса №{result.first_beg}'
+                        f'повтор начинается с индекса №{result.second_beg}')
 
     logger.debug('Process was done')
 

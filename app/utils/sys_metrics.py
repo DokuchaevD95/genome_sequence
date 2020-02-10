@@ -7,6 +7,7 @@ from functools import wraps
 class SysMetrics:
     @classmethod
     def execution_time(cls, action: str):
+        """Замеряем время выполнения метода"""
         def decorator(func):
             @wraps(func)
             def wrapper(*args, **kwargs) -> Any:

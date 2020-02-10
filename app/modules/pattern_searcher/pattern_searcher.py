@@ -2,7 +2,7 @@ import math
 import numpy as np
 from utils import SysMetrics
 from typing import Optional, List, NamedTuple, Tuple
-from concurrent.futures import ThreadPoolExecutor, as_completed, ProcessPoolExecutor
+from concurrent.futures import as_completed, ProcessPoolExecutor
 
 
 __all__ = ['PatternInfo', 'PatterSearcher']
