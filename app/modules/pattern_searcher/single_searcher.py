@@ -149,8 +149,7 @@ class SingleSubSeqSearcher(BaseSubSeqSearcher):
             if any((first_freq_item, second_freq_item)):
                 subseq_info = self.allocate_sequences(
                     first_freq_item.beg,
-                    second_freq_item.beg,
-                    window_size
+                    second_freq_item.beg
                 )
                 break
             else:
