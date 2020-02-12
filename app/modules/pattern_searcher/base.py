@@ -1,5 +1,5 @@
 import numpy as np
-from typing import List, NamedTuple
+from typing import List, NamedTuple, Tuple, Optional
 
 
 class SubSeqInfo(NamedTuple):
@@ -40,3 +40,26 @@ class BaseSubSeqSearcher:
             item = FreqItem(beg, seq[beg: end])
             result.append(item)
         return result
+
+    @staticmethod
+    def compare_freq_lists(first_list: List[FreqItem],
+                           second_list: List[FreqItem],
+                           compare_count: int = None) -> Tuple[Optional[FreqItem], Optional[FreqItem]]:
+        """
+        Ищет в первом массиве такую подпоследовательность, которая
+        входит во второй массив с подпоследовательностями
+        :param first_list:
+        :param second_list:
+        :param compare_count:
+        :return:
+        """
+
+        first_freq_item, second_freq_item = None, None
+        for first_item in first_list:
+            for second_item in second_list:
+                if first_item.slice_[0: compare_count] == second_item.slice_[0: compare_count]:
+                    first_freq_item = first_item
+                    second_freq_item = second_item
+                    break
+
+        return first_freq_item, second_freq_item

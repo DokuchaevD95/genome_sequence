@@ -2,9 +2,9 @@ import math
 import random
 import numpy as np
 from logger import logger
-from typing import Optional, List, Tuple
+from typing import Optional, List
 from utils.sys_metrics import SysMetrics
-from .base import BaseSubSeqSearcher, SubSeqInfo, FreqItem
+from .base import BaseSubSeqSearcher, SubSeqInfo
 from concurrent.futures import ProcessPoolExecutor, as_completed
 
 
@@ -77,80 +77,66 @@ class SingleSubSeqSearcher(BaseSubSeqSearcher):
 
         return subseq_info
 
-    def allocate_sequences(self, first_subseq_index: int, second_subseq_index: int, window_size: int):
-        """
-        Определяет локализацию совпадающих подпоследовательностей
-        :param first_subseq_index: Начальный индекс первого совпадения (подпоследовательности)
-        :param second_subseq_index: Начальный индекс второго совпадения (подпоследовательности)
-        :param window_size: размер окна
-        :return:
-        """
-        length = window_size
+    def _allocate_left_side(self, first_beg: int, second_beg: int) -> int:
+        """Определяет длину повтора слева"""
 
-        # Локализация левой стороны
-        first_beg = first_subseq_index
-        second_beg = second_subseq_index
-        while (first_beg - 1) > 0 and (second_beg - 1) > 0:
-            if self.seq[first_beg - 1] == self.seq[second_beg - 1]:
+        length = 0
+        while first_beg > 0 and second_beg > 0:
+            if self.seq[first_beg] == self.seq[second_beg]:
                 length += 1
                 first_beg -= 1
                 second_beg -= 1
             else:
                 break
 
-        # Локализация правой стороны
-        first_end = first_subseq_index + window_size
-        second_end = second_subseq_index + window_size
-        while (first_end + 1) < self.max_length and (second_end + 1) < self.max_length:
-            if self.seq[first_end + 1] == self.seq[second_end + 1]:
+        return length
+
+    def _allocate_right_side(self, first_beg: int, second_beg: int) -> int:
+        """Определяет длину повтора спарва"""
+
+        length = 0
+        while (first_beg + 1) < len(self.seq) and (second_beg + 1) < len(self.seq):
+            if self.seq[first_beg + 1] == self.seq[second_beg + 1]:
                 length += 1
-                first_end += 1
-                second_end += 1
+                first_beg += 1
+                second_beg += 1
             else:
                 break
 
-        return SubSeqInfo(
-            length=length,
-            first_beg=first_beg,
-            second_beg=second_beg
-        )
+        return length
 
-    @staticmethod
-    def compare_freq_lists(first_list: List[FreqItem],
-                           second_list: List[FreqItem],
-                           compare_count: int = None) -> Tuple[Optional[FreqItem], Optional[FreqItem]]:
+    def allocate_sequences(self, first_beg: int, second_beg: int):
         """
-        Ищет в первом массиве такую подпоследовательность, которая
-        входит во второй массив с подпоследовательностями
-        :param first_list:
-        :param second_list:
-        :param compare_count:
+        Определяет локализацию совпадающих подпоследовательностей
+        :param first_beg: Начальный индекс первого совпадения (подпоследовательности)
+        :param second_beg: Начальный индекс второго совпадения (подпоследовательности)
         :return:
         """
 
-        first_freq_item, second_freq_item = None, None
-        for first_item in first_list:
-            for second_item in second_list:
-                if first_item.slice_[0: compare_count] == second_item.slice_[0: compare_count]:
-                    first_freq_item = first_item
-                    second_freq_item = second_item
-                    break
+        left_length = self._allocate_left_side(first_beg, second_beg)
+        right_length = self._allocate_right_side(first_beg, second_beg)
 
-        return first_freq_item, second_freq_item
+        length = left_length + right_length
+
+        return SubSeqInfo(
+            length=length,
+            first_beg=first_beg - left_length,
+            second_beg=second_beg - left_length
+        )
 
     @SysMetrics.execution_time('Поиск наидлинейшей последовательности методом Царева')
-    def tzarev(self, compare_count: int, expected_pattern_size=10 ** 5) -> Optional[SubSeqInfo]:
+    def tzarev(self, compare_count: int, expected_subseq_size=10 ** 5) -> Optional[SubSeqInfo]:
         """
         Поиск повторяющейся подпоследовательности с частичной
         проверкой начала и конца подпоследовательности
         :param compare_count:
-        :param expected_pattern_size:
+        :param expected_subseq_size:
         :return:
         """
 
         subseq_info: Optional[SubSeqInfo] = None
 
-        window_size = shift = int(math.sqrt(expected_pattern_size))
+        window_size = shift = int(math.sqrt(expected_subseq_size))
         while window_size >= compare_count:
             initial_shift = random.randint(1, window_size / 2)
             logger.info(f'Current window_size = {window_size}')

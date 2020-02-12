@@ -1,5 +1,5 @@
 from typing import List
-from .duo_searcher import DuoSubSeqSearcher
+from .pair_searcher import PairSubSeqSearcher
 from .single_searcher import SingleSubSeqSearcher
 
 
@@ -9,4 +9,4 @@ class SubSeqSearcherFabric:
         if first == second:
             return SingleSubSeqSearcher(first, second)
         else:
-            return DuoSubSeqSearcher(first, second)
+            return PairSubSeqSearcher(first, second)

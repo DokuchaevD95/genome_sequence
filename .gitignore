@@ -1,5 +1,6 @@
 .env/
 .idea/
 app/genomes/
+app/genomes_cache/
 app/logs/
 *.pyc
