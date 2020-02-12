@@ -1,6 +1,5 @@
 import math
 import random
-from logger import logger
 from typing import Optional
 from utils import SysMetrics
 from .base import BaseSubSeqSearcher, SubSeqInfo
@@ -22,8 +21,6 @@ class PairSubSeqSearcher(BaseSubSeqSearcher):
         window_size = shift = int(math.sqrt(expected_subseq_size))
         while window_size >= compare_count:
             initial_shift = random.randint(1, window_size / 2)
-            logger.info(f'Current window_size = {window_size}')
-            logger.info(f'Current initial_shift = {initial_shift}')
             freq_list = self.get_freq_list(self.first, window_size, shift)
             dec_freq_list = self.get_freq_list(self.second, window_size, shift - 1, initial_shift)
 
