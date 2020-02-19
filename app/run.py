@@ -20,6 +20,7 @@ def search_in_pairs():
                     logger.info(f'Наибольшая подпоследовательность длиной: {result.length}')
                     logger.info(f'начало подпос-ти в 1-й послед-ти: {result.first_beg}')
                     logger.info(f'начало подпос-ти во 2-й послед-ти: {result.second_beg}')
+                    logger.info('##########################################################')
 
 
 def search_in_each_self():
