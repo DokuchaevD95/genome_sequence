@@ -20,9 +20,8 @@ class PairSubSeqSearcher(BaseSubSeqSearcher):
 
         window_size = shift = int(math.sqrt(expected_subseq_size))
         while window_size >= compare_count:
-            initial_shift = random.randint(1, window_size / 2)
             freq_list = self.get_freq_list(self.first, window_size, shift)
-            dec_freq_list = self.get_freq_list(self.second, window_size, shift - 1, initial_shift)
+            dec_freq_list = self.get_freq_list(self.second, window_size, shift - 1)
 
             first_freq_item, second_freq_item = self.compare_freq_lists(freq_list, dec_freq_list, compare_count)
 
