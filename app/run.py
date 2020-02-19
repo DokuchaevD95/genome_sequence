@@ -10,7 +10,7 @@ def search_in_pairs():
         for second_seq in reader:
             if first_seq.id != second_seq.id:
                 logger.info(f'Поиск наидлинейшей общей подпос-ти в {first_seq.name} и {second_seq.name}')
-                logger.info(f'Ожидаемая длина L = expected_length')
+                logger.info(f'Ожидаемая длина L = {expected_length}')
                 numeric_first_seq = SequenceDispatcher(first_seq.seq).as_numeric()
                 numeric_second_seq = SequenceDispatcher(second_seq.seq).as_numeric()
                 searcher = SubSeqSearcherFabric.get_searcher(numeric_first_seq, numeric_second_seq)
