@@ -1,5 +1,5 @@
 import math
-import random
+from logger import logger
 from utils import SysMetrics
 from typing import Optional, List
 from .base import BaseSubSeqSearcher, SubSeqInfo
@@ -25,7 +25,8 @@ class PairSubSeqSearcher(BaseSubSeqSearcher):
 
             first_freq_item, second_freq_item = self.compare_freq_lists(freq_list, dec_freq_list, compare_count)
 
-            if any((first_freq_item, second_freq_item)):
+            if first_freq_item and second_freq_item:
+                logger.info(f'Длина окна k = {window_size}')
                 subseq_info = self.allocate_sequences(first_freq_item.beg, second_freq_item.beg)
                 break
             else:
@@ -82,7 +83,7 @@ class PairSubSeqSearcher(BaseSubSeqSearcher):
 
     @classmethod
     def distance(cls, a: List, b: List):
-        "Calculates the Levenshtein distance between a and b."
+        """"Calculates the Levenshtein distance between a and b."""
         n, m = len(a), len(b)
         if n > m:
             # Make sure n <= m, to use O(min(n, m)) space

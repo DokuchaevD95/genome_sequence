@@ -57,9 +57,13 @@ class BaseSubSeqSearcher:
         first_freq_item, second_freq_item = None, None
         for first_item in first_list:
             for second_item in second_list:
-                if first_item.slice_[0: compare_count] == second_item.slice_[0: compare_count]:
+                if first_item.slice_[0: compare_count] != second_item.slice_[0: compare_count]:
+                    continue
+                elif first_item.slice_ == second_item.slice_:
                     first_freq_item = first_item
                     second_freq_item = second_item
                     break
+                else:
+                    continue
 
         return first_freq_item, second_freq_item

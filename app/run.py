@@ -5,7 +5,7 @@ from modules.pattern_searcher import SubSeqSearcherFabric
 
 def search_in_pairs():
     reader = GenomesReader('genomes/')
-    expected_length = 10**5
+    expected_length = 3*10**5
     for first_seq in reader:
         for second_seq in reader:
             if first_seq.id != second_seq.id:
