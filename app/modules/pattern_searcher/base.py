@@ -1,3 +1,4 @@
+import json
 import numpy as np
 from typing import List, NamedTuple, Tuple, Optional
 
@@ -6,6 +7,11 @@ class SubSeqInfo(NamedTuple):
     length: int
     first_beg: int
     second_beg: int
+
+    def __str__(self) -> str:
+        return f'Длина={self.length}\n' \
+               f'Начало в 1-й пос-ти={self.first_beg}\n' \
+               f'Навало во 2-й пос-ти={self.second_beg}'
 
 
 class FreqItem(NamedTuple):

@@ -19,4 +19,4 @@ class GenomesReader:
         for filename in self._dir_content:
             relative_path = os.path.join(self._dir_path, filename)
             with open(relative_path, 'r') as file:
-                yield SeqIO.read(file, 'fasta')
+                yield SeqIO.read(file, config['genome_format'])
