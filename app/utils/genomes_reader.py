@@ -19,4 +19,8 @@ class GenomesReader:
         for filename in self._dir_content:
             relative_path = os.path.join(self._dir_path, filename)
             with open(relative_path, 'r') as file:
-                yield SeqIO.read(file, config['genome_format'])
+                if config['genome_list']:
+                    for genome in SeqIO.parse(file, config['genome_format']):
+                        yield genome
+                else:
+                    yield SeqIO.read(file, config['genome_format'])

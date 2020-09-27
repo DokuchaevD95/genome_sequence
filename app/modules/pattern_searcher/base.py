@@ -1,17 +1,20 @@
-import json
 import numpy as np
+from dataclasses import dataclass
 from typing import List, NamedTuple, Tuple, Optional
 
 
-class SubSeqInfo(NamedTuple):
+@dataclass
+class SubSeqInfo:
     length: int
     first_beg: int
     second_beg: int
+    k_length: int = None
 
     def __str__(self) -> str:
-        return f'Длина={self.length}\n' \
-               f'Начало в 1-й пос-ти={self.first_beg}\n' \
-               f'Навало во 2-й пос-ти={self.second_beg}'
+        return f'Длина повтора: {self.length}\n' \
+               f'Начало повтора в 1-й пос-ти: {self.first_beg}\n' \
+               f'Начало повтора во 2-й пос-ти: {self.second_beg}\n' \
+               f'Длина k: {self.k_length}'
 
 
 class FreqItem(NamedTuple):
@@ -43,8 +46,9 @@ class BaseSubSeqSearcher:
         result = []
         for beg in range(0 + initial_shift, len(seq), shift):
             end = beg + size
-            item = FreqItem(beg, seq[beg: end])
-            result.append(item)
+            if end <= len(seq):
+                item = FreqItem(beg, seq[beg: end])
+                result.append(item)
         return result
 
     @staticmethod
@@ -73,3 +77,27 @@ class BaseSubSeqSearcher:
                     continue
 
         return first_freq_item, second_freq_item
+
+    @staticmethod
+    def get_repeat_count(first_list: List[FreqItem],
+                           second_list: List[FreqItem],
+                           compare_count: int = None) -> int:
+        """
+        Количество повторов определенной длины k
+        :param first_list:
+        :param second_list:
+        :param compare_count:
+        :return:
+        """
+
+        count = 0
+        for first_item in first_list:
+            for second_item in second_list:
+                if first_item.slice_[0: compare_count] != second_item.slice_[0: compare_count]:
+                    continue
+                elif first_item.slice_ == second_item.slice_:
+                    count += 1
+                else:
+                    continue
+
+        return count

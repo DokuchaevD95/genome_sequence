@@ -119,7 +119,7 @@ class SingleSubSeqSearcher(BaseSubSeqSearcher):
 
         return SubSeqInfo(
             length=length,
-            first_beg=first_beg - left_length,
+            first_beg=first_beg - left_length + 1,
             second_beg=second_beg - left_length
         )
 
