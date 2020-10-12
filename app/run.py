@@ -43,8 +43,8 @@ class Application:
         if first_seq.id != second_seq.id:
             numeric_first_seq = SequenceDispatcher(first_seq.seq).as_numeric()
             numeric_second_seq = SequenceDispatcher(second_seq.seq).as_numeric()
-            searcher = BrutePairSearcher(numeric_first_seq, numeric_second_seq)
-            result = searcher.search()
+            searcher = PairSubSeqSearcher(numeric_first_seq, numeric_second_seq)
+            result = searcher.tzarev(self.MIN_LEN, self.EXPECTED_LEN)
         else:
             result = None
 
@@ -61,7 +61,7 @@ class Application:
     def search_parallel(self):
         futures = {}
         reader = GenomesReader(self.GENOMES_PATH)
-        reader = list(reader)[4:6]
+        reader = list(reader)[0:2]
         seq_names = [seq.name for seq in reader]
         with ProcessPoolExecutor(max_workers=3) as pool:
             for i in range(0, len(reader)):
