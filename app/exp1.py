@@ -60,7 +60,7 @@ class Application:
 
     def search_parallel(self):
         reader = GenomesReader(self.GENOMES_PATH)
-        first_seq, second_seq = list(reader)[1:3]
+        first_seq, second_seq = list(reader)[2:4]
 
         expected_len = 15000
         insert_length = 5000
