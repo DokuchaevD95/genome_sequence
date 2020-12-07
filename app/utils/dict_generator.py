@@ -6,7 +6,10 @@ class DictGenerator:
         result = []
         alphabet_len = len(self.alphabet)
         max_val = int(''.join([str(alphabet_len - 1) for i in range(length)]))
-        for digit in range(0, max_val + 1):
+        combinations = range(0, max_val + 1)
+        combinations = map(lambda x: self.convert_to_str(x, length), combinations)
+        combinations = filter(lambda x: self.less_alphabet_len(x), combinations)
+        for digit in combinations:
             digit_str = self.convert_to_str(digit, length)
             for index, smb in enumerate(digit_str):
                 digit_str = self.replace_smb(digit_str, index, self.alphabet[int(smb)])
@@ -17,6 +20,14 @@ class DictGenerator:
     def convert_to_str(self, digit: int, str_len: int):
         str_digit = str(digit)
         return self.generate_zero_str(str_len - len(str_digit)) + str_digit
+
+    def less_alphabet_len(self, digit_str: str) -> bool:
+        result = True
+        for smb in digit_str:
+            if int(smb) > len(self.alphabet) - 1:
+                result = False
+                break
+        return result
 
     @staticmethod
     def generate_zero_str(length: int):
@@ -30,7 +41,7 @@ class DictGenerator:
 
 
 if __name__ == '__main__':
-    dg = DictGenerator(['a', 'b', 'c'])
-    result = dg.generate(2)
+    dg = DictGenerator(['a', 'c', 'g', 't'])
+    result = dg.generate(3)
     print(len(result))
     print(result)
