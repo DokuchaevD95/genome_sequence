@@ -41,7 +41,7 @@ class DictGenerator:
 
 
 if __name__ == '__main__':
-    dg = DictGenerator(['a', 'c', 'g', 't'])
-    result = dg.generate(3)
-    print(len(result))
-    print(result)
+    dg = DictGenerator(['A', 'C', 'G', 'T'])
+    print(dg.generate(1))
+    print(dg.generate(2))
+    print(dg.generate(3))

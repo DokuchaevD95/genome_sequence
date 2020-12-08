@@ -3,9 +3,14 @@ import pandas
 from logger import logger
 from Bio.SeqRecord import SeqRecord
 from typing import Optional, NamedTuple
+from utils.dict_generator import DictGenerator
 from utils import GenomesReader, SequenceDispatcher
 from concurrent.futures import ProcessPoolExecutor, wait
-from modules.pattern_searcher import SubSeqInfo, PairSubSeqSearcher, BrutePairSearcher
+from modules.pattern_searcher import (
+    SubSeqInfo,
+    PairSubSeqSearcher,
+    BrutePairSearcher
+)
 
 
 class ComparedSeq(NamedTuple):
@@ -62,7 +67,6 @@ class Application:
         futures = {}
         reader = GenomesReader(self.GENOMES_PATH)
         reader = list(reader)[0:2]
-        seq_names = [seq.name for seq in reader]
         with ProcessPoolExecutor(max_workers=3) as pool:
             for i in range(0, len(reader)):
                 for j in range(i + 1, len(reader)):
@@ -72,6 +76,21 @@ class Application:
                     futures[future] = ComparedSeq(first_seq.name, second_seq.name)
 
             wait(list(futures.keys()))
+
+        dg = DictGenerator(['A', 'C', 'G', 'T'])
+        freq_list = [
+            *dg.generate(1),
+            *dg.generate(2),
+            *dg.generate(3)
+        ]
+
+        for first in reader:
+            for second in reader:
+                for future, compared_seq in futures.items():
+                    if first.name != second.name and compared_seq.check(first.name, second.name):
+                        result = future.result()
+                        repeat = None
+
 
         # with open('logs/result.csv', 'w', encoding='utf-8') as result_file:
         #     header = ['-', *seq_names]
