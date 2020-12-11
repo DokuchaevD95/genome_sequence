@@ -7,7 +7,8 @@ class SequenceDispatcher:
         'c': 2,
         'g': 3,
         't': 4,
-        'n': 5
+        'n': 5,
+        'y': 6
     }
 
     def __init__(self, seq: str):

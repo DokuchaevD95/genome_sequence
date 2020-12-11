@@ -29,6 +29,13 @@ class SeqPair(NamedTuple):
     def __repr__(self):
         return f'{self.first_seq} / {self.sec_seq}'
 
+    def __eq__(self, other: 'SeqPair') -> bool:
+        return (
+            self.first_seq == other.first_seq or self.sec_seq == other.first_seq
+        ) and (
+            self.first_seq == other.sec_seq or self.sec_seq == other.sec_seq
+        )
+
 
 class Application:
     ALPHABET = ['A', 'C', 'G', 'T']
@@ -66,9 +73,9 @@ class Application:
     def search_parallel(self):
         futures = {}
         reader = GenomesReader(self.GENOMES_PATH)
-        reader = list(reader)[0:2]
+        reader = list(reader)
 
-        with ProcessPoolExecutor(max_workers=3) as pool:
+        with ProcessPoolExecutor(max_workers=4) as pool:
             for i in range(0, len(reader)):
                 for j in range(i + 1, len(reader)):
                     first_seq = reader[i]
@@ -78,9 +85,9 @@ class Application:
 
             wait(list(futures.keys()))
 
-        self.analyze(1, reader, futures)
-        self.analyze(2, reader, futures)
-        self.analyze(3, reader, futures)
+        self.export_result('distance1', self.analyze(1, reader, futures))
+        self.export_result('distance2', self.analyze(2, reader, futures))
+        self.export_result('distance3', self.analyze(3, reader, futures))
 
     @staticmethod
     def calc_freq(combinations: List[str], repeat: str):
@@ -91,8 +98,9 @@ class Application:
         return count
 
     @staticmethod
-    def calc_distance(combinations: list, x_freq: dict, y_freq: dict) -> float:
+    def calc_distance(x_freq: dict, y_freq: dict) -> float:
         total_sum = 0
+        combinations = list(x_freq)
         for comb in combinations:
             total_sum += (x_freq[comb] - y_freq[comb]) ** 2
         return math.sqrt(total_sum)
@@ -110,25 +118,25 @@ class Application:
                         repeat_freq = self.calc_freq(combinations, repeat)
                         pair_freq[pair] = repeat_freq
 
-        self.export_result(pair_freq)
+        return pair_freq
 
-    def export_result(self, pair_freq: dict):
-        with open('logs/result.csv', 'w', encoding='utf-8') as result_file:
+    def export_result(self, filename: str, pair_freq: dict):
+        with open(f'logs/{filename}.csv', 'w', encoding='utf-8') as result_file:
             pair_names = [str(pair) for pair in pair_freq]
             header = ['-', *pair_names]
             writer = csv.DictWriter(result_file, fieldnames=header, dialect='excel')
             writer.writeheader()
-            for first_pair in pair_freq:
-                row = {'-': first_seq}
-                for second_seq in seq_names:
-                    for future, compared_seq in futures.items():
-                        if first_seq != second_seq and compared_seq.check(first_seq, second_seq):
-                            result = future.result()
-                            row.update({second_seq: str(result)})
+            for first_pair, first_freq in pair_freq.items():
+                row = {'-': str(first_pair)}
+                for second_pair, second_freq in pair_freq.items():
+                    if first_pair != second_pair:
+                        row.update({str(second_pair): self.calc_distance(first_freq, second_freq)})
+                    else:
+                        row.update({str(second_pair): 0})
 
                 writer.writerow(row)
-        pandas_file_reader = pandas.read_csv('logs/result.csv', encoding='utf-8')
-        pandas_file_reader.to_excel('logs/result.xlsx', index=None
+        pandas_file_reader = pandas.read_csv(f'logs/{filename}.csv', encoding='utf-8')
+        pandas_file_reader.to_excel(f'logs/{filename}.xlsx', index=None)
 
 
 if __name__ == '__main__':
