@@ -4,12 +4,12 @@ import pandas
 from logger import logger
 from utils import SysMetrics
 from typing import Optional, List
-from .base import BaseSubSeqSearcher, SubSeqInfo
+from .base import BaseSubSeqSearcher, SearchResult
 
 
 class PairSubSeqSearcher(BaseSubSeqSearcher):
     @SysMetrics.execution_time('Поиск наидлинейшей последовательности методом Царева')
-    def tzarev(self, compare_count: int, expected_subseq_size=10 ** 5) -> Optional[SubSeqInfo]:
+    def tzarev(self, compare_count: int, expected_subseq_size=10 ** 5) -> Optional[SearchResult]:
         """
         Поиск повторяющейся подпоследовательности с частичной
         проверкой начала и конца подпоследовательности
@@ -18,7 +18,7 @@ class PairSubSeqSearcher(BaseSubSeqSearcher):
         :return:
         """
 
-        subseq_info: Optional[SubSeqInfo] = None
+        subseq_info: Optional[SearchResult] = None
 
         window_size = int(math.sqrt(expected_subseq_size))
         # with open('logs/k_stat.csv', 'w', encoding='utf-8') as k_stat:
@@ -87,7 +87,9 @@ class PairSubSeqSearcher(BaseSubSeqSearcher):
 
         length = left_length + right_length
 
-        return SubSeqInfo(
+        return SearchResult(
+            self.first_rec,
+            self.second_rec,
             length=length,
             first_beg=first_beg - left_length,
             second_beg=second_beg - left_length

@@ -3,7 +3,7 @@ import random
 import numpy as np
 from typing import Optional, List
 from utils.sys_metrics import SysMetrics
-from .base import BaseSubSeqSearcher, SubSeqInfo
+from .base import BaseSubSeqSearcher, SearchResult
 from concurrent.futures import ProcessPoolExecutor, as_completed
 
 
@@ -17,7 +17,7 @@ class SingleSubSeqSearcher(BaseSubSeqSearcher):
         super().__init__(first, second)
         self.seq = first
 
-    def analyse_length(self, length: int) -> Optional[SubSeqInfo]:
+    def analyse_length(self, length: int) -> Optional[SearchResult]:
         """
         Анализирует текущую длинау на полное совпадение
         :param length:
@@ -31,19 +31,25 @@ class SingleSubSeqSearcher(BaseSubSeqSearcher):
                 second_subseq = self.seq[second_subseq_beg: second_subseq_beg + length]
 
                 if np.array_equal(first_subseq, second_subseq):
-                    return SubSeqInfo(length, first_subseq_beg, second_subseq_beg)
+                    return SearchResult(
+                        self.first_rec,
+                        self.second_rec,
+                        length,
+                        first_subseq_beg,
+                        second_subseq_beg
+                    )
 
         return None
 
     @SysMetrics.execution_time('поиск наидлиннейшей подпоследовательности BruteForce алгоритмом')
-    def brute_force(self, initial_length: int = 1000) -> Optional[SubSeqInfo]:
+    def brute_force(self, initial_length: int = 1000) -> Optional[SearchResult]:
         """
         Метод ищет наидлиннейшую подпоследовательность
         прямым способом (перебором), без параллельности и пр.
         :return:
         """
 
-        subseq_info: Optional[SubSeqInfo] = None
+        subseq_info: Optional[SearchResult] = None
 
         for length in range(initial_length, self.max_length - 1):
             length_info = self.analyse_length(length)
@@ -53,13 +59,13 @@ class SingleSubSeqSearcher(BaseSubSeqSearcher):
         return subseq_info
 
     @SysMetrics.execution_time('Поиск наидлинейшей последовательности параллельным brute force')
-    def parallel_brute_force(self, initial_length: int = 1000) -> Optional[SubSeqInfo]:
+    def parallel_brute_force(self, initial_length: int = 1000) -> Optional[SearchResult]:
         """
         Поиск повторяющейся подпоследователньности с элементами параллельности
         :return:
         """
 
-        subseq_info: Optional[SubSeqInfo] = None
+        subseq_info: Optional[SearchResult] = None
 
         futures_dict = {}
         with ProcessPoolExecutor(5) as pool:
@@ -117,14 +123,16 @@ class SingleSubSeqSearcher(BaseSubSeqSearcher):
 
         length = left_length + right_length
 
-        return SubSeqInfo(
+        return SearchResult(
+            self.first_rec,
+            self.second_rec,
             length=length,
             first_beg=first_beg - left_length + 1,
             second_beg=second_beg - left_length
         )
 
     @SysMetrics.execution_time('Поиск наидлинейшей последовательности методом Царева')
-    def tzarev(self, compare_count: int, expected_subseq_size=10 ** 5) -> Optional[SubSeqInfo]:
+    def tzarev(self, compare_count: int, expected_subseq_size=10 ** 5) -> Optional[SearchResult]:
         """
         Поиск повторяющейся подпоследовательности с частичной
         проверкой начала и конца подпоследовательности
@@ -133,7 +141,7 @@ class SingleSubSeqSearcher(BaseSubSeqSearcher):
         :return:
         """
 
-        subseq_info: Optional[SubSeqInfo] = None
+        subseq_info: Optional[SearchResult] = None
 
         window_size = shift = int(math.sqrt(expected_subseq_size))
         while window_size >= compare_count:

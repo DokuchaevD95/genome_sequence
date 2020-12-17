@@ -1,14 +1,22 @@
 import numpy as np
 from dataclasses import dataclass
+from Bio.SeqRecord import SeqRecord
 from typing import List, NamedTuple, Tuple, Optional
+from utils.sequence_dispatcher import SequenceDispatcher
 
 
 @dataclass
-class SubSeqInfo:
+class SearchResult:
+    first_rec: SeqRecord
+    second_rec: SeqRecord
     length: int
     first_beg: int
     second_beg: int
     k_length: int = None
+
+    @property
+    def repeat_str(self) -> str:
+        return self.first_rec.seq[self.first_beg:self.first_beg + self.length]
 
     def __str__(self) -> str:
         return f'Длина повтора: {self.length}\n' \
@@ -23,10 +31,12 @@ class FreqItem(NamedTuple):
 
 
 class BaseSubSeqSearcher:
-    def __init__(self, first: List[int], second: List[int]):
-        self.first = first
-        self.second = second
-        self.max_length = min(len(first), len(second))
+    def __init__(self, first_rec: SeqRecord, second_rec: SeqRecord):
+        self.first_rec = first_rec
+        self.second_rec = second_rec
+        self.first = SequenceDispatcher(first_rec.seq).as_numeric()
+        self.second = SequenceDispatcher(second_rec.seq).as_numeric()
+        self.max_length = min(len(self.first), len(self.second))
 
     @classmethod
     def get_array(cls, seq: List[int]) -> np.ndarray:

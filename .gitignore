@@ -4,4 +4,5 @@ venv/
 app/genomes/
 app/genomes_cache/
 app/logs/
+results/*
 *.pyc

@@ -2,30 +2,17 @@ import csv
 import pandas
 import random
 from logger import logger
+from typing import Optional
 from Bio.SeqRecord import SeqRecord
-from typing import Optional, NamedTuple
 from utils import GenomesReader, SequenceDispatcher
-from concurrent.futures import ProcessPoolExecutor, wait
-from modules.pattern_searcher import SubSeqInfo, PairSubSeqSearcher
-
-
-class ComparedSeq(NamedTuple):
-    first_seq: str
-    sec_seq: str
-
-    def check(self, first_name, second_name) -> bool:
-        return (
-            self.first_seq == first_name or self.sec_seq == first_name
-        ) and (
-            self.first_seq == second_name or self.sec_seq == second_name
-        )
+from modules.pattern_searcher import SearchResult, PairSubSeqSearcher
 
 
 class Application:
     MIN_LEN = 1
     GENOMES_PATH = 'genomes/'
 
-    def log_result(self, first_seq: SeqRecord, sec_seq: SeqRecord, expected_len: int, result: Optional[SubSeqInfo]):
+    def log_result(self, first_seq: SeqRecord, sec_seq: SeqRecord, expected_len: int, result: Optional[SearchResult]):
         logger.info(f'Поиск наидлинейшей общей подпос-ти в {first_seq.name} и {sec_seq.name}')
         logger.info(f'Ожидаемая длина L = {expected_len}')
 
