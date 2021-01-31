@@ -19,7 +19,7 @@ from modules.pattern_searcher import (
 
 class Application:
     ALPHABET = ['A', 'C', 'G', 'T']
-    GENOMES_PATH = 'genomes/'
+    GENOMES_PATH = '../../genomes/'
 
     def log_result(self, first_seq: SeqRecord, sec_seq: SeqRecord, result: Optional[SearchResult]):
         logger.info(f'Поиск наидлинейшей общей подпос-ти в {first_seq.name} и {sec_seq.name}')
@@ -120,9 +120,11 @@ class Application:
                         row.update({str(row_pair): 0})
 
                 writer.writerow(row)
-        pandas_file_reader = pandas.read_csv(f'logs/{filename}.csv', encoding='utf-8')
-        pandas_file_reader.to_excel(f'logs/{filename}.xlsx', index=None)
+        pandas_file_reader = pandas.read_csv(f'results/{filename}.csv', encoding='utf-8')
+        pandas_file_reader.to_excel(f'results/{filename}.xlsx', index=None)
 
 
 if __name__ == '__main__':
     Application().search_parallel()
+
+

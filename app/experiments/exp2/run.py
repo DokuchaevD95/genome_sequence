@@ -10,7 +10,7 @@ from modules.pattern_searcher import SearchResult, PairSubSeqSearcher
 
 class Application:
     MIN_LEN = 1
-    GENOMES_PATH = 'genomes/'
+    GENOMES_PATH = '../../genomes/'
 
     def log_result(self, first_seq: SeqRecord, sec_seq: SeqRecord, expected_len: int, result: Optional[SearchResult]):
         logger.info(f'Поиск наидлинейшей общей подпос-ти в {first_seq.name} и {sec_seq.name}')
@@ -88,8 +88,8 @@ class Application:
                 insert_length = int(0.9 * insert_length)
                 extracted_seq = extracted_seq[0:insert_length]
 
-        pandas_file_reader = pandas.read_csv('logs/result.csv', encoding='utf-8')
-        pandas_file_reader.to_excel('logs/result.xlsx', index=None)
+        pandas_file_reader = pandas.read_csv('results/result.csv', encoding='utf-8')
+        pandas_file_reader.to_excel('results/result.xlsx', index=None)
 
 
 if __name__ == '__main__':

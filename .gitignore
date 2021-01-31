@@ -3,6 +3,6 @@ venv/
 .idea/
 app/genomes/
 app/genomes_cache/
-app/logs/
+*.log
 results/*
 *.pyc
