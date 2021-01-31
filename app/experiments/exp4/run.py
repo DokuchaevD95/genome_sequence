@@ -3,7 +3,7 @@ import math
 import pandas
 
 from openpyxl import Workbook
-from openpyxl.styles.fills import GradientFill, Stop
+from openpyxl.styles.fills import GradientFill, Stop, Color
 
 from typing import List
 from logger import logger
@@ -40,21 +40,22 @@ class Application:
 
         self.add_headers(ws)
 
-        table = []
+        table = [
+            ['', *[gen.id for gen in self.genomes]]
+        ]
         for index, first_gen in enumerate(self.genomes):
-            if index == 0:
-                row = ['', *[gen.id for gen in self.genomes]]
-            else:
-                row = [first_gen.id]
-                for second_gen in self.genomes:
-                    row.append(GradientFill(
-                        type='linear',
-                        degree=45,
-                        stop=(
-                            Stop(self.get_color(first_gen.id), 0),
-                            Stop(self.get_color(second_gen.id), 1)
-                        )
-                    ))
+            row = [first_gen.id]
+            for second_gen in self.genomes:
+                first_color = Color(self.get_color(first_gen.id), type='rgba')
+                second_color = Color(self.get_color(second_gen.id), type='rgba')
+                row.append(GradientFill(
+                    type='linear',
+                    degree=45,
+                    stop=(
+                        Stop(first_color, 0),
+                        Stop(second_color, 1)
+                    )
+                ))
             table.append(row)
 
         for row_index, row in enumerate(table):
