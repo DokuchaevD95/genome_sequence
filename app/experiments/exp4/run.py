@@ -1,23 +1,12 @@
 import csv
-import math
-import pandas
 
 from openpyxl import Workbook
 from openpyxl.styles.fills import GradientFill, Stop, Color
 
 from typing import List
-from logger import logger
+from typing import NamedTuple
 from utils import GenomesReader
-from utils.seq_pair import SeqPair
 from Bio.SeqRecord import SeqRecord
-from utils.results_rw import ResultsRW
-from typing import Optional, NamedTuple
-from utils.dict_generator import DictGenerator
-from concurrent.futures import ProcessPoolExecutor, wait
-from modules.pattern_searcher import (
-    SearchResult,
-    BrutePairSearcher
-)
 
 
 class GenomeColor(NamedTuple):
@@ -32,7 +21,7 @@ class Application:
     def __init__(self):
         reader = GenomesReader(self.GENOMES_PATH)
         self.genomes: List[SeqRecord] = list(reader)
-        self.genome_colors = self.read_colors('diseases_types.csv')
+        self.genome_colors = self.read_colors('corona_type.csv')
 
     def run(self):
         wb = Workbook()
@@ -40,14 +29,15 @@ class Application:
 
         self.add_headers(ws)
 
+        # Сборка таблицы
         table = [
-            ['', *[gen.id for gen in self.genomes]]
+            ['', *[gen.genome_id for gen in self.genome_colors]]
         ]
-        for index, first_gen in enumerate(self.genomes):
-            row = [first_gen.id]
-            for second_gen in self.genomes:
-                first_color = Color(self.get_color(first_gen.id), type='rgba')
-                second_color = Color(self.get_color(second_gen.id), type='rgba')
+        for index, first_gen in enumerate(self.genome_colors):
+            row = [first_gen.genome_id]
+            for second_gen in self.genome_colors:
+                first_color = Color(self.get_color(first_gen.genome_id), type='rgba')
+                second_color = Color(self.get_color(second_gen.genome_id), type='rgba')
                 row.append(GradientFill(
                     type='linear',
                     degree=45,
@@ -58,6 +48,7 @@ class Application:
                 ))
             table.append(row)
 
+        # Запись таблицы
         for row_index, row in enumerate(table):
             for col_index, value in enumerate(row):
                 cell = ws.cell(row_index + 1, col_index + 1)
