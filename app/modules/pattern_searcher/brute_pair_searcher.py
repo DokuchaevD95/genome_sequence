@@ -19,7 +19,6 @@ class BrutePairSearcher(BaseSubSeqSearcher):
                 result = sub_info
 
     def _check_len(self, length: int, start_first: int = 0) -> Optional[SearchResult]:
-        logger.info(f'Проверка длины {length}')
         for i in range(start_first, len(self.first) - length):
             for j in range(0, len(self.second) - length):
                 first_sub = self.first[i:i+length]

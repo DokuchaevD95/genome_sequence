@@ -7,6 +7,7 @@ from typing import List
 from typing import NamedTuple
 from utils import GenomesReader
 from Bio.SeqRecord import SeqRecord
+from experiments.exp3.run import Application as Exp3Mixin
 
 
 class GenomeColor(NamedTuple):
@@ -14,7 +15,7 @@ class GenomeColor(NamedTuple):
     color: str
 
 
-class Application:
+class Application(Exp3Mixin):
     ALPHABET = ['A', 'C', 'G', 'T']
     GENOMES_PATH = '../../genomes/'
 
@@ -24,13 +25,15 @@ class Application:
         self.genome_colors = self.read_colors('corona_type.csv')
 
     def run(self):
+        search_results = self.find_repeats(self.genomes)
+
         wb = Workbook()
         ws = wb.active
 
         self.add_headers(ws)
 
         # Сборка таблицы
-        table = [
+        colors_table = [
             ['', *[gen.genome_id for gen in self.genome_colors]]
         ]
         for index, first_gen in enumerate(self.genome_colors):
@@ -46,10 +49,10 @@ class Application:
                         Stop(second_color, 1)
                     )
                 ))
-            table.append(row)
+            colors_table.append(row)
 
         # Запись таблицы
-        for row_index, row in enumerate(table):
+        for row_index, row in enumerate(colors_table):
             for col_index, value in enumerate(row):
                 cell = ws.cell(row_index + 1, col_index + 1)
                 if isinstance(value, GradientFill):

@@ -4,8 +4,8 @@ import pandas
 
 from typing import List
 from logger import logger
-from typing import Optional
 from utils import GenomesReader
+from typing import Optional, Dict
 from utils.seq_pair import SeqPair
 from Bio.SeqRecord import SeqRecord
 from utils.results_rw import ResultsRW
@@ -42,19 +42,19 @@ class Application:
 
         return result
 
-    def search(self):
-        reader = GenomesReader(self.GENOMES_PATH)
-        for first_seq in reader:
-            for second_seq in reader:
-                self.search_in_pair(first_seq, second_seq)
-
     def search_parallel(self):
         reader = GenomesReader(self.GENOMES_PATH)
         genomes = list(reader)
 
+        search_results = self.find_repeats(genomes)
+        self.export_result('distance1', self.analyze(1, genomes, search_results))
+        self.export_result('distance2', self.analyze(2, genomes, search_results))
+        self.export_result('distance3', self.analyze(3, genomes, search_results))
+
+    def find_repeats(self, genomes: list) -> dict:
         if not (search_results := ResultsRW.read(genomes, 'brute_searching.csv')):
             search_results = {}
-            with ProcessPoolExecutor(max_workers=4) as pool:
+            with ProcessPoolExecutor() as pool:
                 for i in range(0, len(genomes)):
                     for j in range(i + 1, len(genomes)):
                         first_seq = genomes[i]
@@ -66,9 +66,7 @@ class Application:
                 search_results = {pair: future.result() for pair, future in search_results.items()}
             ResultsRW.write(search_results, 'brute_searching.csv')
 
-        self.export_result('distance1', self.analyze(1, genomes, search_results))
-        self.export_result('distance2', self.analyze(2, genomes, search_results))
-        self.export_result('distance3', self.analyze(3, genomes, search_results))
+        return search_results
 
     @staticmethod
     def calc_freq(freq_len: int, combinations: List[str], repeat: str):
