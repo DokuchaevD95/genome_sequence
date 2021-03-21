@@ -14,7 +14,6 @@ class BrutePairSearcher(BaseSubSeqSearcher):
             if not sub_info:
                 return result
             else:
-                logger.info(sub_info)
                 start_first = sub_info.first_beg
                 result = sub_info
 
