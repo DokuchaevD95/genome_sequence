@@ -9,7 +9,7 @@ from .base import BaseSubSeqSearcher, SearchResult
 
 class PairSubSeqSearcher(BaseSubSeqSearcher):
     @SysMetrics.execution_time('Поиск наидлинейшей последовательности методом Царева')
-    def tzarev(self, compare_count: int, expected_subseq_size=10 ** 5) -> Optional[SearchResult]:
+    def tzarev(self, compare_count: int, expected_subseq_size=10**4) -> Optional[SearchResult]:
         """
         Поиск повторяющейся подпоследовательности с частичной
         проверкой начала и конца подпоследовательности
@@ -21,9 +21,6 @@ class PairSubSeqSearcher(BaseSubSeqSearcher):
         subseq_info: Optional[SearchResult] = None
 
         window_size = int(math.sqrt(expected_subseq_size))
-        # with open('logs/k_stat.csv', 'w', encoding='utf-8') as k_stat:
-        #     writer = csv.writer(k_stat, dialect='excel')
-        #     writer.writerow(['k', '+|-', 'count'])
         while window_size >= compare_count:
             freq_list = self.get_freq_list(self.first, window_size, window_size)
             dec_freq_list = self.get_freq_list(self.second, window_size, window_size - 1)
@@ -31,18 +28,12 @@ class PairSubSeqSearcher(BaseSubSeqSearcher):
             first_freq_item, second_freq_item = self.compare_freq_lists(freq_list, dec_freq_list, compare_count)
 
             if first_freq_item and second_freq_item:
-                repeat_count = self.get_repeat_count(freq_list, dec_freq_list, compare_count)
-                # writer.writerow([window_size, '+', repeat_count])
                 logger.info(f'Длина окна k = {window_size}')
                 subseq_info = self.allocate_sequences(first_freq_item.beg, second_freq_item.beg)
                 subseq_info.k_length = window_size
                 break
             else:
-                # writer.writerow([window_size, '-', 0])
                 window_size = int(window_size * 0.9)
-
-        # pandas_file_reader = pandas.read_csv('logs/k_stat.csv', encoding='utf-8')
-        # pandas_file_reader.to_excel('logs/k_stat.xlsx', index=None)
 
         return subseq_info
 
