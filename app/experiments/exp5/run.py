@@ -85,9 +85,13 @@ class Application:
         ln_dataframe = self.get_ln_statement_to_len(repeats)
         sqr_dataframe = self.get_sqr_statement_to_len(repeats)
 
-        len_dataframe.to_excel('output.xlsx', sheet_name='LEN')
-        ln_dataframe.to_excel('output.xlsx', sheet_name='LN')
-        sqr_dataframe.to_excel('output.xlsx', sheet_name='SQR')
+        writer = pd.ExcelWriter('output.xlsx')
+
+        len_dataframe.to_excel(writer, sheet_name='LEN')
+        ln_dataframe.to_excel(writer, sheet_name='LN')
+        sqr_dataframe.to_excel(writer, sheet_name='SQR')
+
+        writer.save()
 
     def run(self):
         repeats = self.find_repeats()
