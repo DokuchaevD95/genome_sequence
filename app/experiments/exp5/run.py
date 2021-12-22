@@ -1,3 +1,4 @@
+import math
 import pandas as pd
 from Bio import SeqRecord
 from typing import List, NamedTuple, Optional
@@ -14,10 +15,7 @@ class Application:
     def __init__(self):
         reader = GenomesReader(self.GENOMES_PATH)
         self.genomes: List[SeqRecord] = list(reader)
-        self.genomes = self.genomes[:4]
-
-    def get_len_frame(self):
-        pass
+        self.genomes = self.genomes[:3]
 
     def find_in_pair(self, first: SeqRecord, second: SeqRecord) -> Optional[SearchResult]:
         if first.id == second.id:
@@ -42,11 +40,65 @@ class Application:
 
         return result
 
-    def collect_stats(self) -> List[pd.DataFrame]:
-        pass
+    def get_len_frame(self, repeats: List[SearchResult]) -> pd.DataFrame:
+        index = columns = [genome.id for genome in self.genomes]
+        frame = pd.DataFrame(index=index, columns=columns)
+
+        for repeat in repeats:
+            first_id = repeat.first_rec.id
+            sec_id = repeat.second_rec.id
+            if repeat:
+                frame.at[first_id, sec_id] = frame.at[sec_id, first_id] = repeat.length
+            else:
+                frame.at[first_id, sec_id] = frame.at[sec_id, first_id] = 0
+
+        return frame
+
+    def get_ln_statement_to_len(self, repeats: List[SearchResult]) -> pd.DataFrame:
+        index = columns = [genome.id for genome in self.genomes]
+        frame = pd.DataFrame(index=index, columns=columns)
+
+        for repeat in repeats:
+            first_id = repeat.first_rec.id
+            sec_id = repeat.second_rec.id
+            if repeat:
+                avr = (len(repeat.first_rec.seq) + len(repeat.second_rec.seq)) / 2
+                value = repeat.length / math.log(avr)
+                frame.at[first_id, sec_id] = frame.at[sec_id, first_id] = value
+            else:
+                frame.at[first_id, sec_id] = frame.at[sec_id, first_id] = 0
+
+        return frame
+
+    def get_sqr_statement_to_len(self, repeats: List[SearchResult]) -> pd.DataFrame:
+        index = columns = [genome.id for genome in self.genomes]
+        frame = pd.DataFrame(index=index, columns=columns)
+
+        for repeat in repeats:
+            first_id = repeat.first_rec.id
+            sec_id = repeat.second_rec.id
+            if repeat:
+                sq_sum = (len(repeat.first_rec.seq) ** 2) + (len(repeat.second_rec.seq) ** 2)
+                value = repeat.length / math.sqrt(sq_sum)
+                frame.at[first_id, sec_id] = frame.at[sec_id, first_id] = value
+            else:
+                frame.at[first_id, sec_id] = frame.at[sec_id, first_id] = 0
+
+        return frame
+
+    def collect_stats(self, repeats: List[SearchResult]):
+        len_dataframe = self.get_len_frame(repeats)
+        ln_dataframe = self.get_ln_statement_to_len(repeats)
+        sqr_dataframe = self.get_sqr_statement_to_len(repeats)
+
+        len_dataframe.to_excel('output.xlsx', sheet_name='LEN')
+        ln_dataframe.to_excel('output.xlsx', sheet_name='LN')
+        sqr_dataframe.to_excel('output.xlsx', sheet_name='SQR')
 
     def run(self):
         repeats = self.find_repeats()
+
+        self.collect_stats(repeats)
 
 
 if __name__ == '__main__':

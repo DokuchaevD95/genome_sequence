@@ -2,3 +2,4 @@ numpy==1.17.4
 pyyaml==5.1.2
 biopython==1.75
 pandas==1.1.2
+openpyxl==3.0.9
