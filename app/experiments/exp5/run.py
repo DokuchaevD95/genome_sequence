@@ -45,12 +45,10 @@ class Application:
         frame = pd.DataFrame(index=index, columns=columns)
 
         for repeat in repeats:
-            first_id = repeat.first_rec.id
-            sec_id = repeat.second_rec.id
             if repeat:
+                first_id = repeat.first_rec.id
+                sec_id = repeat.second_rec.id
                 frame.at[first_id, sec_id] = frame.at[sec_id, first_id] = repeat.length
-            else:
-                frame.at[first_id, sec_id] = frame.at[sec_id, first_id] = 0
 
         return frame
 
@@ -59,14 +57,12 @@ class Application:
         frame = pd.DataFrame(index=index, columns=columns)
 
         for repeat in repeats:
-            first_id = repeat.first_rec.id
-            sec_id = repeat.second_rec.id
             if repeat:
+                first_id = repeat.first_rec.id
+                sec_id = repeat.second_rec.id
                 avr = (len(repeat.first_rec.seq) + len(repeat.second_rec.seq)) / 2
                 value = repeat.length / math.log(avr)
                 frame.at[first_id, sec_id] = frame.at[sec_id, first_id] = value
-            else:
-                frame.at[first_id, sec_id] = frame.at[sec_id, first_id] = 0
 
         return frame
 
@@ -75,14 +71,12 @@ class Application:
         frame = pd.DataFrame(index=index, columns=columns)
 
         for repeat in repeats:
-            first_id = repeat.first_rec.id
-            sec_id = repeat.second_rec.id
             if repeat:
+                first_id = repeat.first_rec.id
+                sec_id = repeat.second_rec.id
                 sq_sum = (len(repeat.first_rec.seq) ** 2) + (len(repeat.second_rec.seq) ** 2)
                 value = repeat.length / math.sqrt(sq_sum)
                 frame.at[first_id, sec_id] = frame.at[sec_id, first_id] = value
-            else:
-                frame.at[first_id, sec_id] = frame.at[sec_id, first_id] = 0
 
         return frame
 
