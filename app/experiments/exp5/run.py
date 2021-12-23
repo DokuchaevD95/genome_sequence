@@ -15,7 +15,6 @@ class Application:
     def __init__(self):
         reader = GenomesReader(self.GENOMES_PATH)
         self.genomes: List[SeqRecord] = list(reader)
-        self.genomes = self.genomes[:3]
 
     def find_in_pair(self, first: SeqRecord, second: SeqRecord) -> Optional[SearchResult]:
         if first.id == second.id:
@@ -88,8 +87,11 @@ class Application:
         writer = pd.ExcelWriter('output.xlsx')
 
         len_dataframe.to_excel(writer, sheet_name='LEN')
-        ln_dataframe.to_excel(writer, sheet_name='LN')
-        sqr_dataframe.to_excel(writer, sheet_name='SQR')
+        ln_dataframe.to_excel(writer, sheet_name='LEN / ((N1+N2) / 2)')
+        sqr_dataframe.to_excel(writer, sheet_name='LEN / sqrt(N1^2 + N2^2)')
+
+        # _dataframe.to_excel(writer, sheet_name='LEN / ((ln(N1) + ln(N2)) / 2)')
+        # _dataframe.to_excel(writer, sheet_name='LEN / ln(sqrt(N1 * N2))')
 
         writer.save()
 
