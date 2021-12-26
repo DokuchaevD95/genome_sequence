@@ -51,7 +51,7 @@ class Application:
 
         return frame
 
-    def get_ln_statement_to_len(self, repeats: List[SearchResult]) -> pd.DataFrame:
+    def get_ln_statement_to_avr_len(self, repeats: List[SearchResult]) -> pd.DataFrame:
         index = columns = [genome.id for genome in self.genomes]
         frame = pd.DataFrame(index=index, columns=columns)
 
@@ -79,19 +79,49 @@ class Application:
 
         return frame
 
+    def get_avr_ln_to_len(self, repeats: List[SearchResult]) -> pd.DataFrame:
+        index = columns = [genome.id for genome in self.genomes]
+        frame = pd.DataFrame(index=index, columns=columns)
+
+        for repeat in repeats:
+            if repeat:
+                first_id = repeat.first_rec.id
+                sec_id = repeat.second_rec.id
+                avr = (math.log(len(repeat.first_rec.seq)) + math.log(len(repeat.second_rec.seq))) / 2
+                value = repeat.length / avr
+                frame.at[first_id, sec_id] = frame.at[sec_id, first_id] = value
+
+        return frame
+
+    def get_ln_to_sqr(self, repeats: List[SearchResult]) -> pd.DataFrame:
+        index = columns = [genome.id for genome in self.genomes]
+        frame = pd.DataFrame(index=index, columns=columns)
+
+        for repeat in repeats:
+            if repeat:
+                first_id = repeat.first_rec.id
+                sec_id = repeat.second_rec.id
+                mul = len(repeat.first_rec.seq) * len(repeat.second_rec.seq)
+                value = repeat.length / math.log(math.sqrt(mul))
+                frame.at[first_id, sec_id] = frame.at[sec_id, first_id] = value
+
+        return frame
+
     def collect_stats(self, repeats: List[SearchResult]):
         len_dataframe = self.get_len_frame(repeats)
-        ln_dataframe = self.get_ln_statement_to_len(repeats)
+        ln_to_avr_len_dataframe = self.get_ln_statement_to_avr_len(repeats)
+        arv_ln_to_len = self.get_avr_ln_to_len(repeats)
         sqr_dataframe = self.get_sqr_statement_to_len(repeats)
+        ln_to_sqr = self.get_ln_to_sqr(repeats)
 
         writer = pd.ExcelWriter('output.xlsx')
 
         len_dataframe.to_excel(writer, sheet_name='LEN')
-        ln_dataframe.to_excel(writer, sheet_name='LEN / ((N1+N2) / 2)')
-        sqr_dataframe.to_excel(writer, sheet_name='LEN / sqrt(N1^2 + N2^2)')
+        ln_to_avr_len_dataframe.to_excel(writer, sheet_name='LEN div ln((N1 add N2) div 2)')
+        arv_ln_to_len.to_excel(writer, sheet_name='LEN div ((ln(N1) add ln(N2)) div 2)')
+        sqr_dataframe.to_excel(writer, sheet_name='LEN div sqrt(N1^2 add N2^2)')
+        ln_to_sqr.to_excel(writer, sheet_name='LEN div ln(sqrt(N1 mul N2))')
 
-        # _dataframe.to_excel(writer, sheet_name='LEN / ((ln(N1) + ln(N2)) / 2)')
-        # _dataframe.to_excel(writer, sheet_name='LEN / ln(sqrt(N1 * N2))')
 
         writer.save()
 
